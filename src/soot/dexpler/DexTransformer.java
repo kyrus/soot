@@ -45,8 +45,6 @@ import soot.jimple.Stmt;
 import soot.toolkits.graph.ExceptionalUnitGraph;
 import soot.toolkits.scalar.LocalDefs;
 import soot.toolkits.scalar.LocalUses;
-import soot.toolkits.scalar.SimpleLocalUses;
-import soot.toolkits.scalar.SmartLocalDefs;
 import soot.toolkits.scalar.UnitValueBoxPair;
 
 public abstract class DexTransformer extends BodyTransformer {
@@ -128,7 +126,7 @@ public abstract class DexTransformer extends BodyTransformer {
 	}
 
 	protected Type findArrayType(ExceptionalUnitGraph g,
-			SmartLocalDefs localDefs, SimpleLocalUses localUses,
+			LocalDefs localDefs, LocalUses localUses,
 			Stmt arrayStmt, int depth, Set<Unit> alreadyVisitedDefs) {
 		ArrayRef aRef = null;
 		if (arrayStmt.containsArrayRef()) {
@@ -229,7 +227,11 @@ public abstract class DexTransformer extends BodyTransformer {
 					}
 				} else if (r instanceof CastExpr) {
 					Type t = (((CastExpr) r).getCastType());
-					Debug.printDbg("atype cast: ", t);
+					Debug.printDbg("atype cast: ", t);					
+					if (t instanceof ArrayType) {
+						ArrayType at = (ArrayType) t;
+						t = at.getArrayElementType();
+					}
 					if (depth == 0) {
 						aType = t;
 						break;
@@ -239,6 +241,10 @@ public abstract class DexTransformer extends BodyTransformer {
 				} else if (r instanceof InvokeExpr) {
 					Type t = ((InvokeExpr) r).getMethodRef().returnType();
 					Debug.printDbg("atype invoke: ", t);
+					if (t instanceof ArrayType) {
+						ArrayType at = (ArrayType) t;
+						t = at.getArrayElementType();
+					}
 					if (depth == 0) {
 						aType = t;
 						break;
@@ -282,9 +288,8 @@ public abstract class DexTransformer extends BodyTransformer {
 
 			if (aType != null)
 			    break;
-
 		} // loop
-
+		
 		if (depth == 0 && aType == null)
 			throw new RuntimeException(
 					"ERROR: could not find type of array from statement '"

@@ -38,7 +38,7 @@ import java.util.*;
  */
 
 @SuppressWarnings("serial")
-public class RefType extends RefLikeType implements Comparable
+public class RefType extends RefLikeType implements Comparable<RefType>
 {
     public RefType( Singletons.Global g ) { className = ""; }
     public static RefType v() { return G.v().soot_RefType(); }
@@ -73,9 +73,8 @@ public class RefType extends RefLikeType implements Comparable
         }
     }
 
-    public int compareTo(Object o) throws ClassCastException
+    public int compareTo(RefType t)
     {
-        RefType t = (RefType)o;
         return this.toString().compareTo(t.toString());
     }
         
@@ -207,6 +206,10 @@ public class RefType extends RefLikeType implements Comparable
                     commonClass = otherHierarchy.removeFirst();
                     thisHierarchy.removeFirst();
                 }
+                
+                if (commonClass == null)
+                    throw new RuntimeException("Could not find a common superclass for "
+                            + this + " and " + other);
 
                 return RefType.v(commonClass.getName());
             }

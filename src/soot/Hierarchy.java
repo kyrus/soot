@@ -446,20 +446,44 @@ public class Hierarchy
         return Collections.unmodifiableList(l);
     }
 
-    /** Returns true if child is a subclass of possibleParent. */
+    /**
+     * Returns true if child is a subclass of possibleParent. If one of the
+     * known parent classes is phantom, we conservatively assume that the
+     * current class might be a child.
+     */
     public boolean isClassSubclassOf(SootClass child, SootClass possibleParent)
     {
         child.checkLevel(SootClass.HIERARCHY);
         possibleParent.checkLevel(SootClass.HIERARCHY);
-        return getSuperclassesOf(child).contains(possibleParent);
+        List<SootClass> parentClasses = getSuperclassesOf(child);
+        if (parentClasses.contains(possibleParent))
+        	return true;
+        
+        for (SootClass sc : parentClasses)
+        	if (sc.isPhantom())
+        		return true;
+        
+        return false;
     }
 
-    /** Returns true if child is, or is a subclass of, possibleParent. */
+    /**
+     * Returns true if child is, or is a subclass of, possibleParent. If one of
+     * the known parent classes is phantom, we conservatively assume that the
+     * current class might be a child.
+     */
     public boolean isClassSubclassOfIncluding(SootClass child, SootClass possibleParent)
     {
         child.checkLevel(SootClass.HIERARCHY);
         possibleParent.checkLevel(SootClass.HIERARCHY);
-        return getSuperclassesOfIncluding(child).contains(possibleParent);
+        List<SootClass> parentClasses = getSuperclassesOfIncluding(child);
+        if (parentClasses.contains(possibleParent))
+        	return true;
+        
+        for (SootClass sc : parentClasses)
+        	if (sc.isPhantom())
+        		return true;
+        
+        return false;
     }
 
     /** Returns true if child is a direct subclass of possibleParent. */
